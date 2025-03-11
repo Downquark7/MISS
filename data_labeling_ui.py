@@ -40,10 +40,13 @@ class CharacterLabeler:
         self.prev_btn = tk.Button(control_frame, text="<< Previous", command=self.prev_image)
         self.next_btn = tk.Button(control_frame, text="Next >>", command=self.next_image)
         self.save_btn = tk.Button(control_frame, text="Save Labels", command=self.save_labels)
+        self.combine_selected_boxes = tk.Button(control_frame, text="Combine Selected",
+                                                command=self.combine_selected_boxes)
 
         self.prev_btn.pack(side=tk.LEFT, padx=5)
         self.next_btn.pack(side=tk.LEFT, padx=5)
         self.save_btn.pack(side=tk.LEFT, padx=5)
+        self.combine_selected_boxes.pack(side=tk.LEFT, padx=5)
 
         self.status = tk.Label(self.root, text="")
         self.status.pack()
@@ -72,8 +75,11 @@ class CharacterLabeler:
         boxes = []
         for c in contours:
             x, y, w, h = cv2.boundingRect(c)
-            if 3 < w < 200 and 3 < h < 150:
-                boxes.append((x, y, x + w, y + h))
+            if 3 < w < 200 and h > 3 and (h < 150 or w > 30):
+                mask = np.zeros_like(gray)  # Create a blank mask
+                cv2.drawContours(mask, [c], -1, 255, -1)
+                binary_region = cv2.bitwise_and(binary, binary, mask=mask)
+                boxes.append((x, y, x + w, y + h, binary_region))
 
         return image, sorted(boxes, key=lambda b: b[0])
 
@@ -88,7 +94,7 @@ class CharacterLabeler:
 
     def show_processed_image(self):
         display_image = self.original_image.copy()
-        for i, (x1, y1, x2, y2) in enumerate(self.boxes):
+        for i, (x1, y1, x2, y2, c) in enumerate(self.boxes):
             color = (0, 255, 0) if i in self.selected_boxes else (0, 0, 255)
             cv2.rectangle(display_image, (x1, y1), (x2, y2), color, 2)
 
@@ -98,7 +104,7 @@ class CharacterLabeler:
 
     def on_click(self, event):
         x, y = event.x, event.y
-        for i, (x1, y1, x2, y2) in enumerate(self.boxes):
+        for i, (x1, y1, x2, y2, c) in enumerate(self.boxes):
             if x1 <= x <= x2 and y1 <= y <= y2:
                 if i in self.selected_boxes:
                     self.selected_boxes.remove(i)
@@ -114,9 +120,10 @@ class CharacterLabeler:
             y1 = min(b[1] for b in selected)
             x2 = max(b[2] for b in selected)
             y2 = max(b[3] for b in selected)
+            c = np.bitwise_or.reduce([b[4] for b in selected])
 
             new_boxes = [b for i, b in enumerate(self.boxes) if i not in self.selected_boxes]
-            new_boxes.append((x1, y1, x2, y2))
+            new_boxes.append((x1, y1, x2, y2, c))
             self.boxes = sorted(new_boxes, key=lambda b: b[0])
             self.selected_boxes = set()
             self.show_processed_image()
@@ -129,20 +136,33 @@ class CharacterLabeler:
         file_id = os.path.splitext(base_name)[0]
 
         labels = []
-        for i, (x1, y1, x2, y2) in enumerate(self.boxes):
+        for i, (x1, y1, x2, y2, c) in enumerate(self.boxes):
             char_img = self.original_image[y1:y2, x1:x2]
+            char_img_binary = c[y1:y2, x1:x2]
             if char_img.size == 0:
                 continue
 
+            label = None
+            if 0 <= i < len(self.boxes):
+                temp_boxes = self.selected_boxes
+                self.selected_boxes = {i}
+                self.show_processed_image()
+                self.selected_boxes = temp_boxes
+
+            expected_value = pd.read_excel("handwritten-math-expressions-dataset/Maths_eqations_handwritten.xlsx").iloc[
+                int(file_id) - 1].iloc[0]
+            cleaned_value = expected_value.replace(" ", "")  # Remove spaces
+            char_for_box = cleaned_value[i] if i < len(cleaned_value) else "="
             label = simpledialog.askstring("Label Input",
                                            f"Label for character {i + 1} (Press Esc to skip):",
-                                           parent=self.root)
+                                           parent=self.root, initialvalue=char_for_box)
+            self.show_processed_image()  # Reset image after label input
 
             if label:
                 filename = f"{file_id}_char_{i}.png"
-                cv2.imwrite(os.path.join(self.output_dir, filename),
-                            cv2.cvtColor(char_img, cv2.COLOR_RGB2BGR))
-                labels.append({"filename": filename, "label": label})
+                cv2.imwrite(os.path.join(self.output_dir, filename), char_img)
+                cv2.imwrite(os.path.join(self.output_dir+"_binary", filename), char_img_binary)
+                labels.append({"filenam=e": filename, "label": label})
 
         if labels:
             pd.DataFrame(labels).to_csv(self.label_csv, mode='a',
@@ -167,9 +187,10 @@ if __name__ == "__main__":
     app = CharacterLabeler(root)
 
     # Ask for input folder
-    folder_path = filedialog.askdirectory(title="Select Folder with Math Expression Images")
+    folder_path = "handwritten-math-expressions-dataset/Handwritten_equations_images"
     if folder_path:
         os.makedirs(app.output_dir, exist_ok=True)
+        os.makedirs(app.output_dir + "_binary", exist_ok=True)
         app.load_folder(folder_path)
 
     root.mainloop()
