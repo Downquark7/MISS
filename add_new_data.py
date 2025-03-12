@@ -24,33 +24,37 @@ def scan_image(img_path):
     blur = gray
     # plt.imshow(gray, cmap='gray')
     # plt.show()
+    # b_range = range(1, 25, 2)
+    # i_range = range(3, 256, 4)
+    # j_range = range(1, 100, 4)
+    b_range = [25]
+    i_range = [239]
+    j_range = [17]
     target_count = 10
-    good_count = 0
-    for b in range(1, 25, 2):
-        good_count = 0
+    for b in b_range:
         if b > 1:
             blur = cv2.GaussianBlur(gray, (b, b), 0)
-        for i in range(3, 256, 4):  # Iterate through valid block sizes (odd and greater than 1) in steps of 4
-            for j in range(1, 100, 4):  # Iterate through second parameter values in steps of 4
+        for i in i_range:
+            for j in j_range:
+                good_count = 0
                 binary = cv2.adaptiveThreshold(blur, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C,
                                                cv2.THRESH_BINARY_INV, i, j)
                 contours, _ = cv2.findContours(binary, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-                if len(contours) == target_count:  # Stop when at least 10 contours are found
-                    for c in contours:
-                        x, y, w, h = cv2.boundingRect(c)
-                        if 10 < h < 1000 and 5 < w < 1000:
-                            good_count += 1
-                    if good_count == target_count:
-                        print(b, i, j)
-                        plt.imshow(binary, cmap='gray')
-                        plt.show()
-                        break
-            if good_count == target_count:
+                for c in contours:
+                    x, y, w, h = cv2.boundingRect(c)
+                    if 10 < h < 1000 and 5 < w < 1000:
+                        good_count += 1
+                if good_count == target_count == len(contours):
+                    print(b, i, j)
+                    # plt.imshow(binary, cmap='gray')
+                    # plt.show()
+                    break
+            if target_count == 0 or good_count == target_count == len(contours):
                 break
-        if good_count == target_count:
+        if target_count == 0 or good_count == target_count == len(contours):
             break
 
-    if good_count != target_count:
+    if good_count != target_count or len(contours) != target_count:
         print(f"Skipping: {img_path}")
         return
 
