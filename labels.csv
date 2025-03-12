@@ -178,8 +178,8 @@ filename,label
 34_char_4.png,/
 34_char_5.png,3
 34_char_6.png,=
-35_char_0.png,3
-35_char_1.png,*
+35_char_0.png,(
+35_char_1.png,2
 35_char_2.png,5
 35_char_3.png,-
 35_char_4.png,3

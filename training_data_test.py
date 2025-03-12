@@ -66,9 +66,8 @@ def check_image(img_path):
     character = index_to_label[predicted_index]
     actual_label = labels_df.loc[labels_df['filename'] == os.path.basename(img_path), 'label'].values[0]
     if character != actual_label:
-        print(f"Incorrect prediction for {img_path}")
-        print(f"Predicted: {character}, Actual: {actual_label}")
-        plt.title(f"Predicted: {character}, Actual: {actual_label}")
+        print(f"{img_path}, Predicted: {character}, Actual: {actual_label}")
+        plt.title(f"{img_path}, Predicted: {character}, Actual: {actual_label}")
         plt.imshow(tf.keras.preprocessing.image.array_to_img(padded_img), cmap='gray')
         plt.show()
 
