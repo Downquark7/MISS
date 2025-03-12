@@ -162,7 +162,7 @@ class CharacterLabeler:
                 filename = f"{file_id}_char_{i}.png"
                 cv2.imwrite(os.path.join(self.output_dir, filename), char_img)
                 cv2.imwrite(os.path.join(self.output_dir+"_binary", filename), char_img_binary)
-                labels.append({"filenam=e": filename, "label": label})
+                labels.append({"filename": filename, "label": label})
 
         if labels:
             pd.DataFrame(labels).to_csv(self.label_csv, mode='a',
