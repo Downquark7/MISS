@@ -3,6 +3,7 @@ import tensorflow as tf
 import tkinter as tk
 from PIL import Image, ImageDraw, ImageOps
 import cv2
+import matplotlib.pyplot as plt
 
 if __name__ == "__main__":
     model = tf.keras.models.load_model('character_model.keras')
@@ -117,6 +118,7 @@ class DrawingApp:
             inverted = inverted.crop((x, y, x + w, y + h))
 
         img = pad_image(np.array(inverted), target_size=(28, 28))
+        plt.imshow(img, cmap="gray")
         # img = inverted.resize((28, 28))
 
         # cv2.imshow("Image", np.array(img))
@@ -136,6 +138,9 @@ class DrawingApp:
         prediction = model.predict(processed_img)
         predicted_index = np.argmax(prediction)
         character = index_to_label[predicted_index]
+
+        plt.title(f"Predicted: {character}")
+        plt.show()
 
         # Show result
         if self.result_window is None or not self.result_window.winfo_exists():

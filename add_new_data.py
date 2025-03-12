@@ -19,27 +19,36 @@ def scan_image(img_path):
     labels = []
 
     image = cv2.imread(img_path)
+
     gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+    blur = gray
+    # plt.imshow(gray, cmap='gray')
+    # plt.show()
     target_count = 10
     good_count = 0
-    for b in range(3, 30, 2):
-        blur = cv2.GaussianBlur(gray, (b, b), 0)
-        for i in range(3, 256, 2):  # Iterate through valid block sizes (odd and greater than 1) in steps of 2
-            good_count = 0
-            for j in range(1, 50, 2):  # Iterate through second parameter values in steps of 2
-                binary = cv2.adaptiveThreshold(blur, 255, cv2.ADAPTIVE_THRESH_MEAN_C,
+    for b in range(1, 25, 2):
+        good_count = 0
+        if b > 1:
+            blur = cv2.GaussianBlur(gray, (b, b), 0)
+        for i in range(3, 256, 4):  # Iterate through valid block sizes (odd and greater than 1) in steps of 4
+            for j in range(1, 100, 4):  # Iterate through second parameter values in steps of 4
+                binary = cv2.adaptiveThreshold(blur, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C,
                                                cv2.THRESH_BINARY_INV, i, j)
                 contours, _ = cv2.findContours(binary, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
                 if len(contours) == target_count:  # Stop when at least 10 contours are found
                     for c in contours:
                         x, y, w, h = cv2.boundingRect(c)
-                        if 30 < h < 1000 and 30 < w < 1000:
+                        if 10 < h < 1000 and 5 < w < 1000:
                             good_count += 1
                     if good_count == target_count:
                         print(b, i, j)
+                        plt.imshow(binary, cmap='gray')
+                        plt.show()
                         break
             if good_count == target_count:
                 break
+        if good_count == target_count:
+            break
 
     if good_count != target_count:
         print(f"Skipping: {img_path}")
@@ -68,6 +77,7 @@ def scan_image(img_path):
         pd.DataFrame(labels).to_csv(label_csv, mode='a',
                                     header=not os.path.exists(label_csv),
                                     index=False)
+        os.remove(img_path)
 
 
 def numerical_sort(file):
@@ -76,7 +86,7 @@ def numerical_sort(file):
 
 
 if __name__ == "__main__":
-    folder_path = 'test_images'
+    folder_path = '0_9_new_data'
 
     file_paths = [os.path.join(folder_path, f) for f in os.listdir(folder_path)
                   if f.lower().endswith((".png", ".jpg", ".jpeg"))]
