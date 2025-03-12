@@ -113,4 +113,5 @@ if __name__ == "__main__":
     file_paths = sorted(file_paths, key=numerical_sort)
 
     for img_path in file_paths:
+        print("Opening: ", img_path)
         scan_image(img_path)
