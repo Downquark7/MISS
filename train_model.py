@@ -8,6 +8,7 @@ from sklearn.model_selection import train_test_split
 labels_df = pd.read_csv('labels.csv')
 image_folder = 'labeled_characters_binary'
 
+
 # Create label mappings
 label_to_index = {label: idx for idx, label in enumerate(np.unique(labels_df['label']))}
 index_to_label = {v: k for k, v in label_to_index.items()}

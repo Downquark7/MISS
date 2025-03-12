@@ -87,6 +87,9 @@ class DrawingApp:
         # Resize to match model input size
         img = inverted.resize((28, 28))
 
+        # cv2.imshow("Image", np.array(img))
+        # cv2.waitKey(0)
+
         # Convert to array and normalize
         img_array = np.array(img) / 255.0
 
