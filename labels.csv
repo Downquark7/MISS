@@ -214,7 +214,7 @@ filename,label
 39_char_1.png,7
 39_char_2.png,-
 39_char_3.png,1
-39_char_4.png,*
+39_char_4.png,.
 39_char_5.png,4
 40_char_0.png,3
 40_char_1.png,.
@@ -392,7 +392,7 @@ filename,label
 59_char_9.png,7
 59_char_10.png,=
 60_char_0.png,8
-60_char_1.png,.
+60_char_1.png,*
 60_char_2.png,(
 60_char_3.png,7
 60_char_4.png,-

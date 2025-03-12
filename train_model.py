@@ -3,6 +3,7 @@ import pandas as pd
 import numpy as np
 import tensorflow as tf
 from sklearn.model_selection import train_test_split
+from training_data_test import load_and_pad_image
 
 # Load and preprocess data
 labels_df = pd.read_csv('labels.csv')
@@ -23,6 +24,7 @@ for filename, label in zip(labels_df['filename'], labels_df['label']):
     img_path = os.path.join(image_folder, filename)
     img = tf.keras.preprocessing.image.load_img(img_path, color_mode='grayscale', target_size=(28, 28))
     img = tf.keras.preprocessing.image.img_to_array(img)
+    img = load_and_pad_image(img_path, target_size=(28, 28))
     images.append(img / 255.0)  # Normalize
     labels.append(label_to_index[label])
 

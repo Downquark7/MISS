@@ -4,9 +4,41 @@ import tkinter as tk
 from PIL import Image, ImageDraw, ImageOps
 import cv2
 
-# Model and label loading
-model = tf.keras.models.load_model('character_model.keras')
-index_to_label = np.load('label_mappings.npy', allow_pickle=True).item()
+if __name__ == "__main__":
+    model = tf.keras.models.load_model('character_model.keras')
+    index_to_label = np.load('label_mappings.npy', allow_pickle=True).item()
+
+def pad_image(img_array, target_size):
+    # Get the original dimensions
+    original_height, original_width = img_array.shape
+    target_width, target_height = target_size
+
+    # Calculate the aspect ratio
+    aspect_ratio = original_width / original_height
+    target_aspect_ratio = target_width / target_height
+
+    # Resize the image while maintaining the aspect ratio
+    if aspect_ratio > target_aspect_ratio:
+        # Fit to width
+        new_width = target_width
+        new_height = int(target_width / aspect_ratio)
+    else:
+        # Fit to height
+        new_height = target_height
+        new_width = int(target_height * aspect_ratio)
+
+    resized_img = tf.image.resize(tf.expand_dims(img_array, axis=-1), [new_height, new_width])
+
+    # Create a black background image of the target size
+    padded_img = tf.image.pad_to_bounding_box(
+        resized_img,
+        offset_height=(target_height - new_height) // 2,
+        offset_width=(target_width - new_width) // 2,
+        target_height=target_height,
+        target_width=target_width
+    )
+
+    return padded_img
 
 class DrawingApp:
     def __init__(self, root):
@@ -84,8 +116,8 @@ class DrawingApp:
             x, y, w, h = cv2.boundingRect(np.concatenate(contours))
             inverted = inverted.crop((x, y, x + w, y + h))
 
-        # Resize to match model input size
-        img = inverted.resize((28, 28))
+        img = pad_image(np.array(inverted), target_size=(28, 28))
+        # img = inverted.resize((28, 28))
 
         # cv2.imshow("Image", np.array(img))
         # cv2.waitKey(0)
