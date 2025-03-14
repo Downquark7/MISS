@@ -3,7 +3,6 @@ import re
 import numpy as np
 import tensorflow as tf
 import pandas as pd
-import cv2
 import matplotlib.pyplot as plt
 
 
