@@ -95,6 +95,6 @@ if __name__ == "__main__":
     file_paths = [os.path.join(folder_path, f) for f in os.listdir(folder_path)
                   if f.lower().endswith((".png", ".jpg", ".jpeg"))]
 
-for img_path in file_paths:
-    print("Opening: ", img_path)
-    scan_image(img_path)
+    for img_path in file_paths:
+        print("Opening: ", img_path)
+        scan_image(img_path)
