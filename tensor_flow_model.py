@@ -8,6 +8,14 @@ from sklearn.model_selection import train_test_split
 
 
 class TensorFlowModel(BaseModel):
+    def __init__(self):
+        super().__init__()
+        try:
+            self.load_model()
+            print("Model loaded!")
+        except:
+            self.train_model()
+            print("Model trained!")
 
     def load_model(self):
         self.model = tf.keras.models.load_model('character_model.keras')
@@ -76,5 +84,5 @@ class TensorFlowModel(BaseModel):
 if __name__ == "__main__":
     model = TensorFlowModel()
     # model.train_model()
-    model.load_model()
+    # model.load_model()
     model.process_folder('test_images')
