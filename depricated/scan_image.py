@@ -44,8 +44,8 @@ def pad_image(img_array, target_size):
 if __name__ == "__main__":
     # Model and label loading
     model = tf.keras.models.load_model('character_model.keras')
-    index_to_label = np.load('label_mappings.npy', allow_pickle=True).item()
-    labels_df = pd.read_csv('labels.csv')
+    index_to_label = np.load('../label_mappings.npy', allow_pickle=True).item()
+    labels_df = pd.read_csv('../labels.csv')
     label_to_index = {label: idx for idx, label in enumerate(np.unique(labels_df['label']))}
 
 
@@ -121,7 +121,7 @@ def numerical_sort(file):
 if __name__ == "__main__":
     import argparse
 
-    folder_path = 'test_images'
+    folder_path = '../test_images'
     parser = argparse.ArgumentParser(description="Scan images with optional parameters.")
     parser.add_argument("filename", nargs="?", help="Filename of the image to scan.")
     parser.add_argument("-b", type=int, default=25, help="Blur kernel size.")

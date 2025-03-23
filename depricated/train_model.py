@@ -6,7 +6,7 @@ from sklearn.model_selection import train_test_split
 from training_data_test import load_and_pad_image
 
 # Load and preprocess data
-labels_df = pd.read_csv('labels.csv')
+labels_df = pd.read_csv('../labels.csv')
 image_folder = 'labeled_characters_binary'
 
 
@@ -15,7 +15,7 @@ label_to_index = {label: idx for idx, label in enumerate(np.unique(labels_df['la
 index_to_label = {v: k for k, v in label_to_index.items()}
 
 # Save label mappings for later use
-np.save('label_mappings.npy', index_to_label)
+np.save('../label_mappings.npy', index_to_label)
 
 # Load images and labels
 images = []

@@ -77,7 +77,9 @@ class TensorFlowModel(BaseModel):
     def scan_img(self, img):
         prediction = self.model.predict(img)
         predicted_index = np.argmax(prediction)
+        certainty = prediction[0][predicted_index]
         character = self.index_to_label[predicted_index]
+        print(f"Predicted character: {character}, Certainty: {certainty:.2f}")
         return character
 
 
@@ -85,4 +87,4 @@ if __name__ == "__main__":
     model = TensorFlowModel()
     # model.train_model()
     # model.load_model()
-    model.process_folder('test_images')
+    model.eval_folder('0_)_test_images', '0123456789+*/=()', plot=False)
