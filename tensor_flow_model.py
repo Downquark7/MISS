@@ -78,15 +78,16 @@ class TensorFlowModel(BaseModel):
 
     def scan_img(self, img):
         prediction = self.model.predict(img)
-        predicted_index = np.argmax(prediction)
-        certainty = prediction[0][predicted_index]
+        top_5_indices = np.argsort(prediction[0])[-5:][::-1]
+        top_5_characters = [(self.index_to_label[idx], prediction[0][idx]) for idx in top_5_indices]
+        for character, certainty in top_5_characters:
+            print(f"Character: {character}, Certainty: {certainty:.2f}")
+        predicted_index = top_5_indices[0]
         character = self.index_to_label[predicted_index]
-        print(f"Predicted character: {character}, Certainty: {certainty:.2f}")
         return character
 
-
 if __name__ == "__main__":
-    model = TensorFlowModel(train=True)
+    model = TensorFlowModel(train=False)
     # model.train_model()
     # model.load_model()
     model.eval_folder('0_)_test_images', '0123456789+*/=()', plot=False)
