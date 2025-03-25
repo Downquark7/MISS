@@ -89,4 +89,4 @@ if __name__ == "__main__":
     model = TensorFlowModel(train=True)
     # model.train_model()
     # model.load_model()
-    model.eval_folder('0_)_test_images', '0123456789+*/=()', plot=True)
+    model.eval_folder('0_)_test_images', '0123456789+*/=()', plot=False)
