@@ -88,6 +88,7 @@ class TensorFlowModel(BaseModel):
 
 if __name__ == "__main__":
     model = TensorFlowModel(train=False)
+    # model.scan_img_path('0_)_test_images/IMG_8500.jpg')
     # model.train_model()
     # model.load_model()
     model.eval_folder('0_)_test_images', '0123456789+*/=()', plot=False)
