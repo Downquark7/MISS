@@ -36,14 +36,9 @@ class NaiveKNN(BaseModel):
             images.append(img.flatten() / 255.0)
             labels.append(self.label_to_index[label])
 
-        labels = np.array(labels)
-
-        # Split data
-        X_train, X_val, y_train, y_val = train_test_split(images, labels, test_size=0.2, random_state=42)
-
         # Train KNN model
         self.model = KNeighborsClassifier(n_neighbors=3)
-        self.model.fit(X_train, y_train)
+        self.model.fit(images, labels)
 
 
     def scan_img(self, img):
