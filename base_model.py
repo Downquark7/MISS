@@ -5,11 +5,22 @@ from matplotlib import pyplot as plt
 
 
 class BaseModel:
+    """Base class for all character recognition models.
+
+    This class provides common functionality for image processing, evaluation,
+    and character recognition that is shared across all model implementations.
+    """
+
     def __init__(self):
+        """Initialize the base model with default image size."""
         self.image_size = (28, 28)
 
     def process_folder(self, folder_path):
+        """Process all images in a folder.
 
+        Args:
+            folder_path (str): Path to the folder containing images to process.
+        """
         file_paths = [os.path.join(folder_path, f) for f in os.listdir(folder_path)
                       if f.lower().endswith((".png", ".jpg", ".jpeg"))]
 
@@ -18,6 +29,16 @@ class BaseModel:
             self.scan_img_path(img_path)
 
     def eval_folder(self, folder_path, char_list, plot=True):
+        """Evaluate model performance on a folder of images.
+
+        Args:
+            folder_path (str): Path to the folder containing images to evaluate.
+            char_list (str): String of expected characters in the images, in order.
+            plot (bool, optional): Whether to plot the images with bounding boxes. Defaults to True.
+
+        Returns:
+            float: Overall accuracy percentage.
+        """
         file_paths = [os.path.join(folder_path, f) for f in os.listdir(folder_path)
                       if f.lower().endswith((".png", ".jpg", ".jpeg"))]
 
@@ -48,9 +69,31 @@ class BaseModel:
         return overall_accuracy
 
     def scan_img(self, img):
+        """Scan an image and predict the character.
+
+        This is an abstract method that should be implemented by subclasses.
+
+        Args:
+            img (numpy.ndarray): The image to scan.
+
+        Returns:
+            str: The predicted character.
+        """
         pass
 
     def scan_img_path(self, img_path, plot=True):
+        """Scan an image file, detect characters, and predict them.
+
+        This method reads an image file, preprocesses it, detects character regions,
+        and uses the scan_img method to predict each character.
+
+        Args:
+            img_path (str): Path to the image file.
+            plot (bool, optional): Whether to plot the image with bounding boxes. Defaults to True.
+
+        Returns:
+            str: String of predicted characters.
+        """
         image = cv2.imread(img_path)
         gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
         blur = cv2.GaussianBlur(gray, (9, 9), 0)
@@ -106,6 +149,14 @@ class BaseModel:
         return char_list
 
     def pad_image(self, img_array):
+        """Resize and pad an image to the target size while maintaining aspect ratio.
+
+        Args:
+            img_array (numpy.ndarray): The input image array.
+
+        Returns:
+            numpy.ndarray: The resized and padded image.
+        """
         # Get the original dimensions
         original_height, original_width = img_array.shape[:2]
         target_width, target_height = self.image_size

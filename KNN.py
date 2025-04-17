@@ -4,17 +4,41 @@ import pandas as pd
 import cv2
 import os
 from sklearn.neighbors import KNeighborsClassifier
+from sklearn.preprocessing import StandardScaler
 
 
 class KNN(BaseModel):
+    """KNN-based classifier for character recognition.
+
+    This classifier uses a K-Nearest Neighbors algorithm with custom feature
+    extraction for character recognition.
+    """
+
     def __init__(self):
+        """Initialize the KNN classifier and train the model."""
         super().__init__()
-        print("Training NaiveKNN model...")
+        print("Training KNN model...")
         self.train_model()
-        print("NaiveKNN model trained!")
+        print("KNN model trained!")
 
     @staticmethod
     def extract_features(img):
+        """Extract features from an image for KNN classification.
+
+        This method extracts various features from the image, including:
+        - Symmetry features
+        - Zoning features
+        - Projection histograms
+        - Gradient features
+        - Moment-based features
+        - Contour-based features
+
+        Args:
+            img (numpy.ndarray): The input image.
+
+        Returns:
+            numpy.ndarray: A feature vector representing the image.
+        """
         # Ensure image is normalized
         if img.max() > 1.0:
             img = img / 255.0
@@ -157,17 +181,25 @@ class KNN(BaseModel):
 
         return features
 
-    def train_model(self):
+    def train_model(self, labels_file='labels.csv', image_folder='labeled_characters_binary',
+                  label_mappings_path='label_mappings.npy', n_neighbors=3):
+        """Train the KNN model.
+
+        Args:
+            labels_file (str, optional): Path to the CSV file containing labels. Defaults to 'labels.csv'.
+            image_folder (str, optional): Path to the folder containing images. Defaults to 'labeled_characters_binary'.
+            label_mappings_path (str, optional): Path to save label mappings. Defaults to 'label_mappings.npy'.
+            n_neighbors (int, optional): Number of neighbors for KNN. Defaults to 3.
+        """
         # Load and preprocess data
-        self.labels_df = pd.read_csv('labels.csv')
-        image_folder = 'labeled_characters_binary'
+        self.labels_df = pd.read_csv(labels_file)
 
         # Create label mappings
         self.label_to_index = {label: idx for idx, label in enumerate(np.unique(self.labels_df['label']))}
         self.index_to_label = {v: k for k, v in self.label_to_index.items()}
 
         # Save label mappings for later use
-        np.save('label_mappings.npy', self.index_to_label)
+        np.save(label_mappings_path, self.index_to_label)
 
         # Load images and labels
         images = []
@@ -189,15 +221,13 @@ class KNN(BaseModel):
 
         # Normalize features to have zero mean and unit variance
         # This helps ensure all features contribute equally to the distance calculations
-        from sklearn.preprocessing import StandardScaler
         scaler = StandardScaler()
         scaled_features = scaler.fit_transform(feature_array)
 
         # Train KNN model with optimized parameters
-        # Revert to original n_neighbors but keep distance weighting
         # Use Euclidean distance which often works well for normalized features
         self.model = KNeighborsClassifier(
-            n_neighbors=3,
+            n_neighbors=n_neighbors,
             weights='distance',
             metric='euclidean',
             algorithm='auto'
@@ -208,6 +238,14 @@ class KNN(BaseModel):
         self.scaler = scaler
 
     def scan_img(self, img):
+        """Scan an image and predict the character.
+
+        Args:
+            img (numpy.ndarray): The image to scan.
+
+        Returns:
+            str: The predicted character.
+        """
         # Reshape the 4D tensor (1, 28, 28, 1) to 2D image (28, 28)
         img_2d = img.reshape(28, 28)
 
@@ -228,8 +266,6 @@ class KNN(BaseModel):
 
 
 if __name__ == "__main__":
+    """Main entry point for testing the KNN model."""
     model = KNN()
-    # model.scan_img_path('0_)_test_images/IMG_8500.jpg')
-    # model.train_model()
-    # model.load_model()
     model.eval_folder('0_)_test_images', '0123456789+*/=()', plot=False)
