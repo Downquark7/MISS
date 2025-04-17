@@ -6,7 +6,7 @@ import os
 from sklearn.model_selection import train_test_split
 
 
-class TensorFlowModel(BaseModel):
+class ImprovedTensorFlowModelV2(BaseModel):
     def __init__(self, train=False):
         super().__init__()
         if train:
@@ -14,13 +14,13 @@ class TensorFlowModel(BaseModel):
         else:
             try:
                 self.load_model()
-                print("Model loaded!")
+                print("Improved model V2 loaded!")
             except:
                 self.train_model()
-                print("Model trained!")
+                print("Improved model V2 trained!")
 
     def load_model(self):
-        self.model = tf.keras.models.load_model('character_model.keras')
+        self.model = tf.keras.models.load_model('improved_character_model_v2.keras')
         self.index_to_label = np.load('label_mappings.npy', allow_pickle=True).item()
         self.labels_df = pd.read_csv('labels.csv')
         self.label_to_index = {label: idx for idx, label in enumerate(np.unique(self.labels_df['label']))}
@@ -51,30 +51,56 @@ class TensorFlowModel(BaseModel):
         images = np.array(images)
         labels = np.array(labels)
 
+        # Reshape images to have 4 dimensions (batch_size, height, width, channels)
+        images = images.reshape(images.shape[0], images.shape[1], images.shape[2], 1)
+
         # Split data
         X_train, X_val, y_train, y_val = train_test_split(images, labels, test_size=0.2, random_state=42)
 
-        # Build model
+        # Build improved model - similar to original but with some enhancements
         self.model = tf.keras.Sequential([
-            tf.keras.layers.Conv2D(32, (3, 3), activation='relu', input_shape=(images.shape[1], images.shape[2], 1)),
+            # First convolutional block - same as original but with more filters
+            tf.keras.layers.Conv2D(64, (3, 3), activation='relu', padding='same', input_shape=(images.shape[1], images.shape[2], 1)),
             tf.keras.layers.MaxPooling2D((2, 2)),
-            tf.keras.layers.Conv2D(64, (3, 3), activation='relu'),
+            
+            # Second convolutional block - same as original but with more filters
+            tf.keras.layers.Conv2D(128, (3, 3), activation='relu', padding='same'),
             tf.keras.layers.MaxPooling2D((2, 2)),
+            
+            # Additional convolutional layer
+            tf.keras.layers.Conv2D(128, (3, 3), activation='relu', padding='same'),
+            
+            # Fully connected layers
             tf.keras.layers.Flatten(),
-            tf.keras.layers.Dense(64, activation='relu'),
+            tf.keras.layers.Dense(128, activation='relu'),  # Increased from 64 to 128
+            tf.keras.layers.Dropout(0.3),  # Add dropout for regularization
             tf.keras.layers.Dense(len(self.label_to_index), activation='softmax')
         ])
 
+        # Compile model with the same settings as original
         self.model.compile(optimizer='adam',
                            loss='sparse_categorical_crossentropy',
                            metrics=['accuracy'])
 
+        # Add early stopping to prevent overfitting
+        early_stopping = tf.keras.callbacks.EarlyStopping(
+            monitor='val_loss',
+            patience=5,
+            restore_best_weights=True
+        )
+
         # Train model
-        self.history = self.model.fit(X_train, y_train, epochs=10, validation_data=(X_val, y_val))
+        self.history = self.model.fit(
+            X_train, y_train,
+            epochs=20,  # Increased from 10 to 20
+            batch_size=32,
+            validation_data=(X_val, y_val),
+            callbacks=[early_stopping]
+        )
 
         # Save model
-        self.model.save('character_model.keras')
-        print("Model saved!")
+        self.model.save('improved_character_model_v2.keras')
+        print("Improved model V2 saved!")
 
     def scan_img(self, img, return_confidence=False, return_top_k=False, k=3):
         prediction = self.model.predict(img)
@@ -96,9 +122,7 @@ class TensorFlowModel(BaseModel):
         else:
             return character
 
+
 if __name__ == "__main__":
-    model = TensorFlowModel(train=False)
-    # model.scan_img_path('0_)_test_images/IMG_8500.jpg')
-    # model.train_model()
-    # model.load_model()
+    model = ImprovedTensorFlowModelV2(train=True)
     model.eval_folder('0_)_test_images', '0123456789+*/=()', plot=False)

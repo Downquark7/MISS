@@ -1,4 +1,4 @@
-from base_model import BaseModel
+from resized_base_model import ResizedBaseModel
 import numpy as np
 import pandas as pd
 import tensorflow as tf
@@ -6,7 +6,7 @@ import os
 from sklearn.model_selection import train_test_split
 
 
-class TensorFlowModel(BaseModel):
+class ResizedTensorFlowModel(ResizedBaseModel):
     def __init__(self, train=False):
         super().__init__()
         if train:
@@ -14,14 +14,14 @@ class TensorFlowModel(BaseModel):
         else:
             try:
                 self.load_model()
-                print("Model loaded!")
+                print("Resized model loaded!")
             except:
                 self.train_model()
-                print("Model trained!")
+                print("Resized model trained!")
 
     def load_model(self):
-        self.model = tf.keras.models.load_model('character_model.keras')
-        self.index_to_label = np.load('label_mappings.npy', allow_pickle=True).item()
+        self.model = tf.keras.models.load_model('resized_character_model.keras')
+        self.index_to_label = np.load('label_mappings_resized_tf.npy', allow_pickle=True).item()
         self.labels_df = pd.read_csv('labels.csv')
         self.label_to_index = {label: idx for idx, label in enumerate(np.unique(self.labels_df['label']))}
 
@@ -35,7 +35,7 @@ class TensorFlowModel(BaseModel):
         self.index_to_label = {v: k for k, v in self.label_to_index.items()}
 
         # Save label mappings for later use
-        np.save('label_mappings.npy', self.index_to_label)
+        np.save('label_mappings_resized_tf.npy', self.index_to_label)
 
         # Load images and labels
         images = []
@@ -44,7 +44,7 @@ class TensorFlowModel(BaseModel):
             img_path = os.path.join(image_folder, filename)
             img = tf.keras.preprocessing.image.load_img(img_path, color_mode='grayscale')
             img_array = tf.keras.preprocessing.image.img_to_array(img)
-            img = self.pad_image(img_array)
+            img = self.pad_image(img_array)  # This will pad to 14x14 due to ResizedBaseModel
             images.append(img / 255.0)  # Normalize
             labels.append(self.label_to_index[label])
 
@@ -54,12 +54,17 @@ class TensorFlowModel(BaseModel):
         # Split data
         X_train, X_val, y_train, y_val = train_test_split(images, labels, test_size=0.2, random_state=42)
 
-        # Build model
+        # Build model - adjusted for 14x14 images
+        # With smaller input size, we need to be careful with pooling to avoid reducing dimensions too much
         self.model = tf.keras.Sequential([
-            tf.keras.layers.Conv2D(32, (3, 3), activation='relu', input_shape=(images.shape[1], images.shape[2], 1)),
-            tf.keras.layers.MaxPooling2D((2, 2)),
-            tf.keras.layers.Conv2D(64, (3, 3), activation='relu'),
-            tf.keras.layers.MaxPooling2D((2, 2)),
+            # First convolutional layer
+            tf.keras.layers.Conv2D(32, (3, 3), activation='relu', padding='same', input_shape=(14, 14, 1)),
+            tf.keras.layers.MaxPooling2D((2, 2)),  # Reduces to 7x7
+            
+            # Second convolutional layer without pooling to preserve spatial dimensions
+            tf.keras.layers.Conv2D(64, (3, 3), activation='relu', padding='same'),
+            
+            # Flatten and dense layers
             tf.keras.layers.Flatten(),
             tf.keras.layers.Dense(64, activation='relu'),
             tf.keras.layers.Dense(len(self.label_to_index), activation='softmax')
@@ -73,8 +78,8 @@ class TensorFlowModel(BaseModel):
         self.history = self.model.fit(X_train, y_train, epochs=10, validation_data=(X_val, y_val))
 
         # Save model
-        self.model.save('character_model.keras')
-        print("Model saved!")
+        self.model.save('resized_character_model.keras')
+        print("Resized model saved!")
 
     def scan_img(self, img, return_confidence=False, return_top_k=False, k=3):
         prediction = self.model.predict(img)
@@ -96,9 +101,7 @@ class TensorFlowModel(BaseModel):
         else:
             return character
 
+
 if __name__ == "__main__":
-    model = TensorFlowModel(train=False)
-    # model.scan_img_path('0_)_test_images/IMG_8500.jpg')
-    # model.train_model()
-    # model.load_model()
+    model = ResizedTensorFlowModel(train=True)  # Force training to ensure we use the right image size
     model.eval_folder('0_)_test_images', '0123456789+*/=()', plot=False)

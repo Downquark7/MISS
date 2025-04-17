@@ -4,9 +4,10 @@ import tkinter as tk
 from PIL import Image, ImageDraw, ImageOps
 import cv2
 import matplotlib.pyplot as plt
+from super_ensemble import SuperEnsemble
 
 if __name__ == "__main__":
-    model = tf.keras.models.load_model('character_model.keras')
+    model = SuperEnsemble()
     index_to_label = np.load('label_mappings.npy', allow_pickle=True).item()
 
 def pad_image(img_array, target_size):
@@ -134,10 +135,8 @@ class DrawingApp:
         # Preprocess drawn image
         processed_img = self.preprocess_image()
 
-        # Make prediction
-        prediction = model.predict(processed_img)
-        predicted_index = np.argmax(prediction)
-        character = index_to_label[predicted_index]
+        # Make prediction using SuperEnsemble's scan_img method
+        character = model.scan_img(processed_img)
 
         plt.title(f"Predicted: {character}")
         plt.show()
