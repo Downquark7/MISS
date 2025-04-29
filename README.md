@@ -106,11 +106,7 @@ To train a new model with your own data:
    ```python
    model = TensorFlowModel(train=True)
    ```
-3. Comment out line 94 (the evaluation line):
-   ```python
-   # model.eval_folder('0_)_test_images', '0123456789+*/=()', plot=False)
-   ```
-4. Run the script:
+3. Run the script:
    ```bash
    python tensor_flow_model.py
    ```
