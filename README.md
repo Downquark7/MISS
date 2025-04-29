@@ -1,4 +1,4 @@
-# MISS - Mathematical Image Symbol Scanner
+# MISS - Math Identification and Solving Systems
 
 MISS is a machine learning project for recognizing handwritten mathematical expressions and symbols. The system can identify individual characters from images containing mathematical expressions and provides a user-friendly interface for drawing and recognizing characters in real-time.
 
