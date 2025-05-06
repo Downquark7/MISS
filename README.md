@@ -12,6 +12,7 @@ MISS is a machine learning project for recognizing handwritten mathematical expr
 - [Quick Start](#quick-start)
 - [Installation](#installation)
 - [Usage](#usage)
+- [Model Comparison](#model-comparison)
 - [Project Structure](#project-structure)
 - [Dependencies](#dependencies)
 - [Dataset](#dataset)
@@ -133,6 +134,57 @@ model.eval_folder('your_test_directory', 'your_character_list', plot=False)
 ```
 
 The evaluation provides accuracy metrics and can optionally display plots of the results when the `plot` parameter is set to `True`.
+
+## Model Comparison
+
+We've compared several machine learning models for character recognition to identify the best approach for our use case. The comparison includes accuracy, per-character accuracy, and inference time.
+
+### Comparison Results
+
+| Classifier | Accuracy | Inference Time |
+|------------|----------|---------------|
+| KNN        | 0.00%    | 0.36s         |
+| NaiveKNN   | 62.50%   | 1.01s         |
+| TensorFlow | 71.25%   | 4.40s         |
+
+### Key Findings
+
+- **TensorFlow Model**: Achieves the highest accuracy at 71.25%, but has the longest inference time at 4.40 seconds.
+- **NaiveKNN Model**: Provides a good balance between accuracy (62.50%) and inference time (1.01 seconds).
+- **KNN Model**: Has the fastest inference time at 0.36 seconds, but fails to recognize any characters correctly (0.00% accuracy).
+
+### Per-Character Accuracy
+
+The TensorFlow model performs best for most characters. The NaiveKNN model provides reasonable accuracy with faster inference time. The KNN model in its current implementation does not correctly recognize any characters.
+
+### Running the Comparison
+
+To run the model comparison yourself:
+
+```bash
+python compare_classifiers.py
+```
+
+This script evaluates all models on the test dataset and generates comparison charts. Note that running this script may take some time as it needs to train and evaluate multiple models.
+
+The script generates the following visualizations:
+1. A bar chart comparing the accuracy of all models
+2. A bar chart comparing the inference time of all models
+3. A heatmap showing the per-character accuracy for each model
+4. A bar chart showing which model performs best for each character
+
+These visualizations help in understanding the strengths and weaknesses of each model for different characters and use cases.
+
+### Visualization Results
+
+#### Classifier Comparison
+![Classifier Comparison](classifier_comparison.png)
+
+#### Character Accuracy Heatmap
+![Character Accuracy Heatmap](character_accuracy_heatmap.png)
+
+#### Best Model by Character
+![Best Model by Character](best_model_by_character.png)
 
 ## Project Structure
 
