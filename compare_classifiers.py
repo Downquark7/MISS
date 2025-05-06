@@ -13,16 +13,6 @@ def evaluate_classifier(classifier, name, test_folder, expected_chars):
     """Evaluate a classifier and return its accuracy, per-character accuracy, and inference time."""
     print(f"\n{'-'*20} Evaluating {name} {'-'*20}")
 
-    # Train the model if needed
-    if hasattr(classifier, 'train_model'):
-        # For classifiers that need explicit training
-        if any(x in name for x in ['TensorFlow']):
-            # Models that need explicit training
-            classifier.train_model()
-        else:
-            # Other models might train in __init__, so we don't need to call train_model again
-            pass
-
     # Measure inference time and accuracy
     start_time = time.time()
 
@@ -63,7 +53,7 @@ def main():
     classifiers = [
         (KNN(), "KNN"),
         (NaiveKNN(), "NaiveKNN"),
-        (CNN(train=False), "TensorFlow")
+        (CNN(train=False), "CNN")
     ]
     results = []
     for classifier, name in classifiers:
