@@ -6,7 +6,7 @@ import os
 from sklearn.model_selection import train_test_split
 
 
-class TensorFlowModel(BaseModel):
+class CNN(BaseModel):
     def __init__(self, train=False):
         super().__init__()
         if train:
@@ -87,7 +87,7 @@ class TensorFlowModel(BaseModel):
         return character
 
 if __name__ == "__main__":
-    model = TensorFlowModel(train=False)
+    model = CNN(train=False)
     # model.scan_img_path('0_)_test_images/IMG_8500.jpg')
     # model.train_model()
     # model.load_model()

@@ -7,7 +7,7 @@ import matplotlib.pyplot as plt
 # Import available classifiers
 from KNN import KNN
 from naive_KNN import NaiveKNN
-from tensor_flow_model import TensorFlowModel
+from CNN import CNN
 
 def evaluate_classifier(classifier, name, test_folder, expected_chars):
     """Evaluate a classifier and return its accuracy, per-character accuracy, and inference time."""
@@ -63,7 +63,7 @@ def main():
     classifiers = [
         (KNN(), "KNN"),
         (NaiveKNN(), "NaiveKNN"),
-        (TensorFlowModel(train=False), "TensorFlow")
+        (CNN(train=False), "TensorFlow")
     ]
     results = []
     for classifier, name in classifiers:

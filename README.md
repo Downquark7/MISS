@@ -109,7 +109,7 @@ To train a new model with your own data:
    ```
 3. Run the script:
    ```bash
-   python tensor_flow_model.py
+   python CNN.py
    ```
 
 Requirements for training:
@@ -123,7 +123,7 @@ You can modify training parameters in the script (e.g., number of epochs, batch 
 By default, running tensor_flow_model.py will evaluate the model on test images:
 
 ```bash
-python tensor_flow_model.py
+python CNN.py
 ```
 
 The script will run evaluation on the test images in the '0_)_test_images' directory and display accuracy metrics.
