@@ -16,9 +16,6 @@ from logistic_regression_classifier import LogisticRegressionModel
 from neural_network_classifier import NeuralNetworkModel
 from random_forest_model import RandomForestModel
 from svm_model import SVMModel
-from meta_classifier import MetaClassifier
-from improved_meta_classifier import ImprovedMetaClassifier
-from transfer_learning_model import TransferLearningModel
 
 # Import resized classifiers
 from resized_knn import ResizedKNN
@@ -26,11 +23,10 @@ from resized_pca_classifier import ResizedPCAClassifier
 from resized_tensor_flow_model import ResizedTensorFlowModel
 
 def evaluate_classifier(classifier, name, test_folder, expected_chars):
-    """Evaluate a classifier and return its accuracy, training time, and inference time."""
+    """Evaluate a classifier and return its accuracy, per-character accuracy, and inference time."""
     print(f"\n{'-'*20} Evaluating {name} {'-'*20}")
 
-    # Measure training time
-    start_time = time.time()
+    # Train the model if needed
     if hasattr(classifier, 'train_model'):
         # For classifiers that need explicit training
         if any(x in name for x in ['TensorFlow', 'ImprovedTensorFlow', 'TransferLearning']):
@@ -39,17 +35,16 @@ def evaluate_classifier(classifier, name, test_folder, expected_chars):
         else:
             # Other models might train in __init__, so we don't need to call train_model again
             pass
-    training_time = time.time() - start_time
 
     # Measure inference time and accuracy
     start_time = time.time()
-    accuracy = classifier.eval_folder(test_folder, expected_chars, plot=False)
+    overall_accuracy, per_char_accuracy = classifier.eval_folder(test_folder, expected_chars, plot=False)
     inference_time = time.time() - start_time
 
     return {
         'name': name,
-        'accuracy': accuracy,
-        'training_time': training_time,
+        'accuracy': overall_accuracy,
+        'per_char_accuracy': per_char_accuracy,
         'inference_time': inference_time
     }
 
@@ -96,17 +91,16 @@ def main():
         table_data.append([
             result['name'],
             f"{result['accuracy']:.2f}%",
-            f"{result['training_time']:.2f}s",
             f"{result['inference_time']:.2f}s"
         ])
 
     # Print table header
-    print(f"{'Classifier':<20} {'Accuracy':<15} {'Training Time':<15} {'Inference Time':<15}")
-    print("-" * 65)
+    print(f"{'Classifier':<20} {'Accuracy':<15} {'Inference Time':<15}")
+    print("-" * 50)
 
     # Print table rows
     for row in table_data:
-        print(f"{row[0]:<20} {row[1]:<15} {row[2]:<15} {row[3]:<15}")
+        print(f"{row[0]:<20} {row[1]:<15} {row[2]:<15}")
 
     # Group results by classifier type
     knn_results = [r for r in results if "KNN" in r['name']]
@@ -132,12 +126,10 @@ def main():
             resized = type_results[1]
 
             accuracy_diff = resized['accuracy'] - original['accuracy']
-            training_time_diff = resized['training_time'] - original['training_time']
             inference_time_diff = resized['inference_time'] - original['inference_time']
 
             print(f"\n{classifier_type} Original vs Resized Comparison:")
             print(f"  Accuracy: {accuracy_diff:.2f}% ({'better' if accuracy_diff > 0 else 'worse'})")
-            print(f"  Training Time: {training_time_diff:.2f}s ({'slower' if training_time_diff > 0 else 'faster'})")
             print(f"  Inference Time: {inference_time_diff:.2f}s ({'slower' if inference_time_diff > 0 else 'faster'})")
 
     # Compare TensorFlow vs ImprovedTensorFlow models
@@ -147,12 +139,10 @@ def main():
             print("\nTensorFlow vs Improved Models Comparison:")
             for improved in improved_tf_results:
                 accuracy_diff = improved['accuracy'] - original_tf['accuracy']
-                training_time_diff = improved['training_time'] - original_tf['training_time']
                 inference_time_diff = improved['inference_time'] - original_tf['inference_time']
 
                 print(f"\n  {improved['name']} vs {original_tf['name']}:")
                 print(f"    Accuracy: {accuracy_diff:.2f}% ({'better' if accuracy_diff > 0 else 'worse'})")
-                print(f"    Training Time: {training_time_diff:.2f}s ({'slower' if training_time_diff > 0 else 'faster'})")
                 print(f"    Inference Time: {inference_time_diff:.2f}s ({'slower' if inference_time_diff > 0 else 'faster'})")
 
     # Compare MetaClassifier vs ImprovedMetaClassifier
@@ -162,31 +152,31 @@ def main():
 
         if meta and improved_meta:
             accuracy_diff = improved_meta['accuracy'] - meta['accuracy']
-            training_time_diff = improved_meta['training_time'] - meta['training_time']
             inference_time_diff = improved_meta['inference_time'] - meta['inference_time']
 
             print("\nMetaClassifier vs ImprovedMetaClassifier Comparison:")
             print(f"  Accuracy: {accuracy_diff:.2f}% ({'better' if accuracy_diff > 0 else 'worse'})")
-            print(f"  Training Time: {training_time_diff:.2f}s ({'slower' if training_time_diff > 0 else 'faster'})")
             print(f"  Inference Time: {inference_time_diff:.2f}s ({'slower' if inference_time_diff > 0 else 'faster'})")
 
     # Create bar charts for visualization
     create_comparison_charts(results)
+
+    # Create character accuracy charts
+    create_character_accuracy_chart(results)
 
 def create_comparison_charts(results):
     """Create bar charts comparing all classifiers."""
     # Extract data for plotting
     names = [r['name'] for r in results]
     accuracies = [r['accuracy'] for r in results]
-    training_times = [r['training_time'] for r in results]
     inference_times = [r['inference_time'] for r in results]
 
     # Determine figure size based on number of classifiers
     fig_width = max(10, len(names) * 0.8)
-    fig_height = 18
+    fig_height = 12
 
-    # Create figure with 3 subplots
-    fig, (ax1, ax2, ax3) = plt.subplots(3, 1, figsize=(fig_width, fig_height))
+    # Create figure with 2 subplots
+    fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(fig_width, fig_height))
 
     # Create x positions for bars
     x_pos = np.arange(len(names))
@@ -205,9 +195,9 @@ def create_comparison_charts(results):
         ax1.text(bar.get_x() + bar.get_width()/2., height + 1,
                 f"{height:.2f}%", ha='center', va='bottom')
 
-    # Training time comparison
-    bars2 = ax2.bar(x_pos, training_times)
-    ax2.set_title('Training Time Comparison')
+    # Inference time comparison
+    bars2 = ax2.bar(x_pos, inference_times)
+    ax2.set_title('Inference Time Comparison')
     ax2.set_ylabel('Time (seconds)')
     ax2.set_xticks(x_pos)
     ax2.set_xticklabels(names, rotation=45, ha='right')
@@ -218,21 +208,83 @@ def create_comparison_charts(results):
         ax2.text(bar.get_x() + bar.get_width()/2., height + 0.1,
                 f"{height:.2f}s", ha='center', va='bottom')
 
-    # Inference time comparison
-    bars3 = ax3.bar(x_pos, inference_times)
-    ax3.set_title('Inference Time Comparison')
-    ax3.set_ylabel('Time (seconds)')
-    ax3.set_xticks(x_pos)
-    ax3.set_xticklabels(names, rotation=45, ha='right')
-
-    # Add value labels on bars
-    for bar in bars3:
-        height = bar.get_height()
-        ax3.text(bar.get_x() + bar.get_width()/2., height + 0.1,
-                f"{height:.2f}s", ha='center', va='bottom')
-
     plt.tight_layout()
     plt.savefig('classifier_comparison.png')
+    plt.show()
+
+def create_character_accuracy_chart(results):
+    """Create a heatmap showing which models perform best for each character."""
+    # Extract data for plotting
+    names = [r['name'] for r in results]
+
+    # Get all unique characters across all models
+    all_chars = set()
+    for result in results:
+        all_chars.update(result['per_char_accuracy'].keys())
+    all_chars = sorted(list(all_chars))
+
+    # Create a matrix of accuracies: rows=models, columns=characters
+    accuracy_matrix = np.zeros((len(names), len(all_chars)))
+    for i, result in enumerate(results):
+        for j, char in enumerate(all_chars):
+            if char in result['per_char_accuracy']:
+                accuracy_matrix[i, j] = result['per_char_accuracy'][char]
+
+    # Create a heatmap
+    plt.figure(figsize=(max(12, len(all_chars) * 0.8), max(8, len(names) * 0.5)))
+
+    # Create the heatmap
+    im = plt.imshow(accuracy_matrix, cmap='viridis', aspect='auto')
+
+    # Add colorbar
+    cbar = plt.colorbar(im)
+    cbar.set_label('Accuracy (%)')
+
+    # Add labels
+    plt.yticks(np.arange(len(names)), names)
+    plt.xticks(np.arange(len(all_chars)), all_chars)
+    plt.xlabel('Character')
+    plt.ylabel('Model')
+    plt.title('Model Accuracy by Character')
+
+    # Add text annotations in the cells
+    for i in range(len(names)):
+        for j in range(len(all_chars)):
+            text = plt.text(j, i, f"{accuracy_matrix[i, j]:.1f}%",
+                           ha="center", va="center", color="w" if accuracy_matrix[i, j] < 70 else "black")
+
+    plt.tight_layout()
+    plt.savefig('character_accuracy_heatmap.png')
+    plt.show()
+
+    # Create a bar chart showing the best model for each character
+    plt.figure(figsize=(max(10, len(all_chars) * 0.8), 6))
+
+    # Find the best model for each character
+    best_models = []
+    best_accuracies = []
+
+    for j, char in enumerate(all_chars):
+        best_model_idx = np.argmax(accuracy_matrix[:, j])
+        best_models.append(names[best_model_idx])
+        best_accuracies.append(accuracy_matrix[best_model_idx, j])
+
+    # Create a bar chart
+    bars = plt.bar(all_chars, best_accuracies)
+
+    # Add model names as text on bars
+    for i, bar in enumerate(bars):
+        height = bar.get_height()
+        plt.text(bar.get_x() + bar.get_width()/2., height + 1,
+                f"{best_models[i]}", ha='center', va='bottom', rotation=90, fontsize=8)
+
+    plt.ylim(0, 105)  # Leave room for model names
+    plt.xlabel('Character')
+    plt.ylabel('Best Accuracy (%)')
+    plt.title('Best Model Accuracy by Character')
+
+    plt.tight_layout()
+    plt.savefig('best_model_by_character.png')
     plt.show()
 
 if __name__ == "__main__":

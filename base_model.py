@@ -37,7 +37,9 @@ class BaseModel:
             plot (bool, optional): Whether to plot the images with bounding boxes. Defaults to True.
 
         Returns:
-            float: Overall accuracy percentage.
+            tuple: (overall_accuracy, per_char_accuracy) where:
+                - overall_accuracy (float): Overall accuracy percentage.
+                - per_char_accuracy (dict): Dictionary mapping characters to their accuracy percentages.
         """
         file_paths = [os.path.join(folder_path, f) for f in os.listdir(folder_path)
                       if f.lower().endswith((".png", ".jpg", ".jpeg"))]
@@ -66,7 +68,7 @@ class BaseModel:
         print(f"Per Character Accuracy: { {char: f"{accuracy:.2f}%" for char, accuracy in per_char_accuracy.items()} }")
         print(f"Scanned Character Count: {scanned_chars}")
         print(f"Expected Character Count: {total_chars}")
-        return overall_accuracy
+        return overall_accuracy, per_char_accuracy
 
     def scan_img(self, img):
         """Scan an image and predict the character.

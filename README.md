@@ -57,28 +57,27 @@ The MetaClassifier implements a sophisticated voting system:
 
 The performance of all models was evaluated on a test set of handwritten mathematical expressions. The metrics measured include:
 - Accuracy (%)
-- Training time (seconds)
 - Inference time (seconds)
 
 ### Performance Metrics Table
 
-| Classifier | Accuracy | Training Time | Inference Time |
-|------------|----------|--------------|----------------|
-| KNN (28x28) | 66.25% | 0.00s | 1.26s |
-| KNN (14x14) | 63.75% | 0.00s | 1.13s |
-| PCA (28x28) | 63.75% | 0.00s | 1.00s |
-| PCA (14x14) | 65.00% | 0.00s | 0.99s |
-| TensorFlow (28x28) | 70.00% | 1.82s | 0.62s |
-| TensorFlow (14x14) | 76.25% | 1.69s | 0.57s |
-| ImprovedTensorFlow | 6.25% | 10.86s | 1.56s |
-| ImprovedTensorFlowV2 | 71.25% | 3.21s | 0.74s |
-| DecisionTree | 37.50% | 0.00s | 0.26s |
-| GaussianNaiveBayes | 48.75% | 0.00s | 0.31s |
-| GradientBoosting | 53.75% | 0.00s | 0.32s |
-| LogisticRegression | 63.75% | 0.00s | 0.28s |
-| NeuralNetwork | 53.75% | 0.00s | 0.47s |
-| RandomForest | 60.00% | 0.00s | 2.97s |
-| SVM | 68.75% | 0.00s | 0.47s |
+| Classifier | Accuracy | Inference Time |
+|------------|----------|----------------|
+| KNN (28x28) | 66.25% | 1.26s |
+| KNN (14x14) | 63.75% | 1.13s |
+| PCA (28x28) | 63.75% | 1.00s |
+| PCA (14x14) | 65.00% | 0.99s |
+| TensorFlow (28x28) | 70.00% | 0.62s |
+| TensorFlow (14x14) | 76.25% | 0.57s |
+| ImprovedTensorFlow | 6.25% | 1.56s |
+| ImprovedTensorFlowV2 | 71.25% | 0.74s |
+| DecisionTree | 37.50% | 0.26s |
+| GaussianNaiveBayes | 48.75% | 0.31s |
+| GradientBoosting | 53.75% | 0.32s |
+| LogisticRegression | 63.75% | 0.28s |
+| NeuralNetwork | 53.75% | 0.47s |
+| RandomForest | 60.00% | 2.97s |
+| SVM | 68.75% | 0.47s |
 
 ### Accuracy Comparison
 ![Classifier Comparison](classifier_comparison.png)
@@ -87,7 +86,7 @@ The performance of all models was evaluated on a test set of handwritten mathema
 
 1. **Model Size vs. Performance**: Reducing model input size from 28x28 to 14x14 pixels generally resulted in:
    - Slightly lower accuracy
-   - Significantly faster training and inference times
+   - Faster inference times
 
 2. **Traditional vs. Deep Learning**: 
    - Deep learning models (TensorFlow CNN) achieved higher accuracy than most traditional models
@@ -100,6 +99,12 @@ The performance of all models was evaluated on a test set of handwritten mathema
 4. **Character-Specific Performance**:
    - Certain characters ('*', '5', '9') were more challenging for most models
    - Different models excelled at recognizing different characters
+
+   The following heatmap shows the accuracy of each model for each character:
+   ![Character Accuracy Heatmap](character_accuracy_heatmap.png)
+
+   The following chart shows which model performs best for each character:
+   ![Best Model by Character](best_model_by_character.png)
 
 ## Conclusions
 
