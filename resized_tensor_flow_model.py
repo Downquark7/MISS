@@ -60,10 +60,10 @@ class ResizedTensorFlowModel(ResizedBaseModel):
             # First convolutional layer
             tf.keras.layers.Conv2D(32, (3, 3), activation='relu', padding='same', input_shape=(14, 14, 1)),
             tf.keras.layers.MaxPooling2D((2, 2)),  # Reduces to 7x7
-            
+
             # Second convolutional layer without pooling to preserve spatial dimensions
             tf.keras.layers.Conv2D(64, (3, 3), activation='relu', padding='same'),
-            
+
             # Flatten and dense layers
             tf.keras.layers.Flatten(),
             tf.keras.layers.Dense(64, activation='relu'),
@@ -82,7 +82,8 @@ class ResizedTensorFlowModel(ResizedBaseModel):
         print("Resized model saved!")
 
     def scan_img(self, img, return_confidence=False, return_top_k=False, k=3):
-        prediction = self.model.predict(img)
+        # Use __call__ instead of predict to avoid TensorFlow compatibility issues
+        prediction = self.model(img, training=False).numpy()
         top_5_indices = np.argsort(prediction[0])[-5:][::-1]
         top_5_characters = [(self.index_to_label[idx], prediction[0][idx]) for idx in top_5_indices]
         for character, certainty in top_5_characters:

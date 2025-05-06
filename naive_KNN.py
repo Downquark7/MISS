@@ -42,7 +42,9 @@ class NaiveKNN(BaseModel):
 
 
     def scan_img(self, img):
-        prediction = self.model.predict(img.flatten().reshape(1, -1))
+        # Normalize the image to match the training data
+        normalized_img = img.flatten() / 255.0
+        prediction = self.model.predict(normalized_img.reshape(1, -1))
         character = self.index_to_label[prediction[0]]
         return str(character)
 

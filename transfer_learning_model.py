@@ -173,8 +173,8 @@ class TransferLearningModel(BaseModel):
         input_size = (224, 224)
         img_resized = tf.image.resize(img_rgb, input_size)
 
-        # Make prediction
-        prediction = self.model.predict(img_resized)
+        # Use __call__ instead of predict to avoid TensorFlow compatibility issues
+        prediction = self.model(img_resized, training=False).numpy()
         top_5_indices = np.argsort(prediction[0])[-5:][::-1]
         top_5_characters = [(self.index_to_label[idx], prediction[0][idx]) for idx in top_5_indices]
         for character, certainty in top_5_characters:

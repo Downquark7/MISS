@@ -62,14 +62,14 @@ class ImprovedTensorFlowModelV2(BaseModel):
             # First convolutional block - same as original but with more filters
             tf.keras.layers.Conv2D(64, (3, 3), activation='relu', padding='same', input_shape=(images.shape[1], images.shape[2], 1)),
             tf.keras.layers.MaxPooling2D((2, 2)),
-            
+
             # Second convolutional block - same as original but with more filters
             tf.keras.layers.Conv2D(128, (3, 3), activation='relu', padding='same'),
             tf.keras.layers.MaxPooling2D((2, 2)),
-            
+
             # Additional convolutional layer
             tf.keras.layers.Conv2D(128, (3, 3), activation='relu', padding='same'),
-            
+
             # Fully connected layers
             tf.keras.layers.Flatten(),
             tf.keras.layers.Dense(128, activation='relu'),  # Increased from 64 to 128
@@ -103,7 +103,8 @@ class ImprovedTensorFlowModelV2(BaseModel):
         print("Improved model V2 saved!")
 
     def scan_img(self, img, return_confidence=False, return_top_k=False, k=3):
-        prediction = self.model.predict(img)
+        # Use __call__ instead of predict to avoid TensorFlow compatibility issues
+        prediction = self.model(img, training=False).numpy()
         top_5_indices = np.argsort(prediction[0])[-5:][::-1]
         top_5_characters = [(self.index_to_label[idx], prediction[0][idx]) for idx in top_5_indices]
         for character, certainty in top_5_characters:

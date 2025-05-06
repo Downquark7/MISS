@@ -150,7 +150,8 @@ class ImprovedTensorFlowModel(BaseModel):
         print("Improved model saved!")
 
     def scan_img(self, img, return_confidence=False, return_top_k=False, k=3):
-        prediction = self.model.predict(img)
+        # Use __call__ instead of predict to avoid TensorFlow compatibility issues
+        prediction = self.model(img, training=False).numpy()
         top_5_indices = np.argsort(prediction[0])[-5:][::-1]
         top_5_characters = [(self.index_to_label[idx], prediction[0][idx]) for idx in top_5_indices]
         for character, certainty in top_5_characters:

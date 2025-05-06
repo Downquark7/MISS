@@ -130,7 +130,8 @@ class TensorFlowModel(BaseModel):
                 - If return_confidence is True, returns a tuple (character, confidence).
                 - Otherwise, returns the predicted character as a string.
         """
-        prediction = self.model.predict(img, verbose=0)  # Suppress TensorFlow output
+        # Use __call__ instead of predict to avoid TensorFlow compatibility issues
+        prediction = self.model(img, training=False).numpy()
         top_5_indices = np.argsort(prediction[0])[-5:][::-1]
         top_5_characters = [(self.index_to_label[idx], prediction[0][idx]) for idx in top_5_indices]
 
