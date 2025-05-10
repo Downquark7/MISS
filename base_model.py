@@ -129,6 +129,9 @@ class BaseModel:
         padded_img = np.zeros((target_height, target_width), dtype=np.uint8)
         y_offset = (target_height - new_height) // 2
         x_offset = (target_width - new_width) // 2
+        # x_offset = 0
+        # y_offset = 0
+        #put images in corner instead of centered
         padded_img[y_offset:y_offset + new_height, x_offset:x_offset + new_width] = resized_img
 
         return padded_img
